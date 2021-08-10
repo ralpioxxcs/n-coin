@@ -1,46 +1,64 @@
 package main
 
 import (
-	"crypto/sha256"
 	"fmt"
+	"log"
+	"net/http"
+	"text/template"
+
+	"github.com/ralpioxxcs/nocoin/blockchain"
 )
 
-type block struct {
-	data     string
-	hash     string
-	prevHash string
+const (
+	port        = ":4001"
+	templateDir = "templates/"
+)
+
+var templates *template.Template
+
+type homeData struct {
+	PageTitle string
+	Blocks    []*blockchain.Block
 }
 
-/*
+func home(rw http.ResponseWriter, r *http.Request) {
+	data := homeData{"Home", blockchain.GetBlockchain().AllBlocks()}
+	templates.ExecuteTemplate(rw, "home", data)
+}
 
-[Blocks]
+func add(rw http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		templates.ExecuteTemplate(rw, "add", nil)
+	case "POST":
+		r.ParseForm()
+		data := r.Form.Get("blockData")
+		blockchain.GetBlockchain().AddBlock(data)
 
-Block1
-	b1Hash = (data + "")
-
-Block2
-	b2Hash = (data + b1Hash)
-
-Block3
-	b3Hash = (data + b2Hash)
-
-	.
-	.
-	.
-
-if Block1's hash is changed, block2 hash is changed,,
-
-*/
+	}
+	//data := homeData{"Home", blockchain.GetBlockchain().AllBlocks()}
+	//templates.ExecuteTemplate(rw, "add", data)
+}
 
 func main() {
+	// update
+	templates = template.Must(template.ParseGlob(templateDir + "pages/*.html"))
+	templates = template.Must(templates.ParseGlob(templateDir + "partials/*.html"))
 
-	genesisBlock := block{"Gensis Block", "", ""}
-	//genesisBlock.hash = sha256.Sum256([]byte(genesisBlock.data + genesisBlock.prevHash))
+	http.HandleFunc("/", home)
+	http.HandleFunc("/add", add)
 
-	hash := sha256.Sum256([]byte(genesisBlock.data + genesisBlock.prevHash))
-	hexHash := fmt.Sprintf("%x", hash)
-	genesisBlock.hash = hexHash
+	fmt.Printf("Listening on http://localhost%s\n", port)
+	log.Fatal(http.ListenAndServe(port, nil))
 
-	fmt.Println(genesisBlock)
+	//chain := blockchain.GetBlockchain()
+	//chain.AddBlock("2nd Block")
+	//chain.AddBlock("3rd Block")
+	//chain.AddBlock("4th Block")
 
+	//for _, block := range chain.AllBlocks() {
+	//    fmt.Printf("Data : %s\n", block.Data)
+	//    fmt.Printf("Hash : %s\n", block.Hash)
+	//    fmt.Printf("Prev Hash : %s\n", block.PrevHash)
+	//}
 }
