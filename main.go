@@ -1,64 +1,83 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"text/template"
 
 	"github.com/ralpioxxcs/nocoin/blockchain"
+	"github.com/ralpioxxcs/nocoin/utils"
 )
 
-const (
-	port        = ":4001"
-	templateDir = "templates/"
-)
+const port string = ":4000"
 
-var templates *template.Template
+type URL string
 
-type homeData struct {
-	PageTitle string
-	Blocks    []*blockchain.Block
+// MarshalText interface
+func (u URL) MarshalText() ([]byte, error) {
+	url := fmt.Sprintf("http://localhost%s%s", port, u)
+	return []byte(url), nil
 }
 
-func home(rw http.ResponseWriter, r *http.Request) {
-	data := homeData{"Home", blockchain.GetBlockchain().AllBlocks()}
-	templates.ExecuteTemplate(rw, "home", data)
+type URLDescription struct {
+	URL         URL    `json:"url"`
+	Method      string `json:"method"`
+	Description string `json:"description"`
+	Payload     string `json:"payload,omitempty"`
 }
 
-func add(rw http.ResponseWriter, r *http.Request) {
+type AddBlockBody struct {
+	Message string
+}
+
+func documentation(rw http.ResponseWriter, r *http.Request) {
+	data := []URLDescription{
+		{
+			URL:         URL("/"),
+			Method:      "GET",
+			Description: "See Documentation",
+		},
+		{
+			URL:         URL("/blocks/{id}"),
+			Method:      "POST",
+			Description: "See A Block",
+		},
+	}
+	fmt.Println(data)
+
+	// Adding json header, browser can to parse json
+	rw.Header().Add("Content-Type", "application/json")
+
+	json.NewEncoder(rw).Encode(data)
+	// Equivalent to this code {{
+	//b, err := json.Marshal(data)
+	//utils.HandleErr(err)
+	//fmt.Fprintf(rw, "%s", b)
+	// }}
+}
+
+func blocks(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		templates.ExecuteTemplate(rw, "add", nil)
+		rw.Header().Add("Content-Type", "application/json")
+		json.NewEncoder(rw).Encode(blockchain.GetBlockchain().AllBlocks())
 	case "POST":
-		r.ParseForm()
-		data := r.Form.Get("blockData")
-		blockchain.GetBlockchain().AddBlock(data)
+		// decode body & binding struct
+		var addBlockBody AddBlockBody
+		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody))
+		blockchain.GetBlockchain().AddBlock(addBlockBody.Message)
+		rw.WriteHeader(http.StatusCreated)
 
 	}
-	//data := homeData{"Home", blockchain.GetBlockchain().AllBlocks()}
-	//templates.ExecuteTemplate(rw, "add", data)
 }
 
 func main() {
-	// update
-	templates = template.Must(template.ParseGlob(templateDir + "pages/*.html"))
-	templates = template.Must(templates.ParseGlob(templateDir + "partials/*.html"))
 
-	http.HandleFunc("/", home)
-	http.HandleFunc("/add", add)
+	//explorer.Start()
+	http.HandleFunc("/", documentation)
+	http.HandleFunc("/blocks", blocks)
 
-	fmt.Printf("Listening on http://localhost%s\n", port)
+	fmt.Printf("Li.stening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, nil))
-
-	//chain := blockchain.GetBlockchain()
-	//chain.AddBlock("2nd Block")
-	//chain.AddBlock("3rd Block")
-	//chain.AddBlock("4th Block")
-
-	//for _, block := range chain.AllBlocks() {
-	//    fmt.Printf("Data : %s\n", block.Data)
-	//    fmt.Printf("Hash : %s\n", block.Hash)
-	//    fmt.Printf("Prev Hash : %s\n", block.PrevHash)
-	//}
 }
