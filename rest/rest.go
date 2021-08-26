@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/ralpioxxcs/nocoin/blockchain"
-	"github.com/ralpioxxcs/nocoin/utils"
+	"github.com/ralpioxxcs/n-coin/blockchain"
+	"github.com/ralpioxxcs/n-coin/utils"
 )
 
 var port string

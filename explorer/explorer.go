@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ralpioxxcs/nocoin/blockchain"
+	"github.com/ralpioxxcs/n-coin/blockchain"
 )
 
 const (

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ralpioxxcs/nocoin/explorer"
-	"github.com/ralpioxxcs/nocoin/rest"
+	"github.com/ralpioxxcs/n-coin/explorer"
+	"github.com/ralpioxxcs/n-coin/rest"
 )
 
 func usage() {
@@ -44,5 +44,4 @@ func Start() {
 	}
 
 	fmt.Println(*port, *mode)
-
 }
