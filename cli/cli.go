@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/ralpioxxcs/n-coin/explorer"
 	"github.com/ralpioxxcs/n-coin/rest"
@@ -15,7 +16,7 @@ func usage() {
 	fmt.Printf("-port=4000:		Set the PORT of the server\n")
 	fmt.Printf("-mode=rest:		Choose between 'html','rest' and 'both' (html, rest)'\n")
 
-	os.Exit(2)
+	runtime.Goexit()
 }
 
 func Start() {
