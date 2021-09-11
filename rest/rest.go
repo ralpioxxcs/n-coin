@@ -28,8 +28,9 @@ type urlDescription struct {
 	Payload     string `json:"payload,omitempty"`
 }
 
-type addBlockBody struct {
-	Message string
+type balanceResponse struct {
+	Address string `json:"address"`
+	Balance int    `json:"balance"`
 }
 
 type errorResponse struct {
@@ -59,6 +60,11 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Method:      "GET",
 			Description: "See A Block",
 		},
+		{
+			URL:         url("/balance/{address}"),
+			Method:      "GET",
+			Description: "Get transaction outputs for an address",
+		},
 	}
 	fmt.Println(data)
 
@@ -79,9 +85,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(rw).Encode(blockchain.Blockchain().Blocks())
 	case "POST":
 		// decode body & binding struct
-		var addBlockBody addBlockBody
-		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody))
-		blockchain.Blockchain().AddBlock(addBlockBody.Message)
+		blockchain.Blockchain().AddBlock()
 		rw.WriteHeader(http.StatusCreated)
 	case "PUT":
 	default:
@@ -111,6 +115,20 @@ func status(rw http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(rw).Encode(blockchain.Blockchain())
 }
 
+func balance(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	address := vars["address"]
+
+	total := r.URL.Query().Get("total")
+	switch total {
+	case "true":
+		amount := blockchain.Blockchain().BalanceByAddress(address)
+		json.NewEncoder(rw).Encode(balanceResponse{address, amount})
+	default:
+		utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.Blockchain().TxOutsByAddress(address)))
+	}
+}
+
 func Start(aPort int) {
 	port = fmt.Sprintf(":%d", aPort)
 
@@ -121,6 +139,7 @@ func Start(aPort int) {
 	router.HandleFunc("/status", status).Methods("GET")
 	router.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET")
+	router.HandleFunc("/balance/{address}", balance)
 
 	fmt.Printf("Listening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, router))
