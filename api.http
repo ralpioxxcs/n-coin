@@ -7,8 +7,21 @@ GET http://localhost:4000/status
 GET http://localhost:4000/blocks
 
 ###
-POST http://localhost:4000/blocks
+GET http://localhost:4000/blocks
+
+###
+POST http://localhost:4000/balance/nico
 
 {
     "message":"Mine me"
 }
+###
+POST http://localhost:4000/transactions
+
+{
+    "to":"woo",
+    "amount":80
+}
+###
+
+http://localhost:4000/mempool

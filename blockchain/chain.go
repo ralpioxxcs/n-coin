@@ -127,8 +127,6 @@ func Blockchain() *blockchain {
 			b = &blockchain{
 				Height: 0,
 			}
-			// fmt.Printf("NewestHash : %s\nHeight:%d\n", b.NewestHash, b.Height)
-
 			// search for checkpoint from db
 			checkpoint := db.CheckPoint()
 			if checkpoint == nil {
