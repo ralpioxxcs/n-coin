@@ -98,3 +98,19 @@ func (m *mempool) AddTx(to string, amount int) error {
 	m.Txs = append(m.Txs, tx)
 	return nil
 }
+
+// 승인할 transactions
+func (m *mempool) TxToConfirm() []*Tx {
+	// coinbase의 tx를 가져옴
+	coinBase := makeCoinbaseTx("nico")
+	// mempool의 모든 tx를 저장
+	txs := m.Txs
+
+	// coinbase tx 추가
+	txs = append(txs, coinBase)
+
+	// mempool 초기화
+	m.Txs = nil
+	return txs
+
+}
