@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/ralpioxxcs/n-coin/cli"
-	"github.com/ralpioxxcs/n-coin/db"
+	"github.com/ralpioxxcs/n-coin/wallet"
 )
 
 func main() {
-	defer db.Close() // execute when main() exited
-	cli.Start()
+	// defer db.Close() // execute when main() exited
+	// cli.Start()
+	wallet.Start()
 }
