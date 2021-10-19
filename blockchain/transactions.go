@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/ralpioxxcs/n-coin/utils"
+	"github.com/ralpioxxcs/n-coin/wallet"
 )
 
 const (
@@ -110,7 +111,7 @@ func makeTx(from, to string, amount int) (*Tx, error) {
 }
 
 func (m *mempool) AddTx(to string, amount int) error {
-	tx, err := makeTx("nico", to, amount)
+	tx, err := makeTx(wallet.Wallet().Address, to, amount)
 	if err != nil {
 		return err
 	}
@@ -121,7 +122,7 @@ func (m *mempool) AddTx(to string, amount int) error {
 // 승인할 transactions
 func (m *mempool) TxToConfirm() []*Tx {
 	// coinbase의 tx를 가져옴
-	coinBase := makeCoinbaseTx("nico")
+	coinBase := makeCoinbaseTx(wallet.Wallet().Address)
 	// mempool의 모든 tx를 저장
 	txs := m.Txs
 
