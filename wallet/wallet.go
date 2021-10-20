@@ -75,7 +75,7 @@ func aFromK(key *ecdsa.PrivateKey) string {
 }
 
 // sign something (privateKey)
-func sign(payload string, w *wallet) string {
+func Sign(payload string, w *wallet) string {
 	payloadAsBytes, err := hex.DecodeString(payload)
 	utils.HandleErr(err)
 
@@ -102,7 +102,7 @@ func restoreBigInts(payload string) (*big.Int, *big.Int, error) {
 }
 
 // publicKey 검증
-func verify(signature, payload, address string) bool {
+func Verify(signature, payload, address string) bool {
 	r, s, err := restoreBigInts(signature)
 	utils.HandleErr(err)
 
@@ -129,7 +129,7 @@ func Wallet() *wallet {
 			// yes 	-> restore from file
 			w.privateKey = restoreKey()
 		} else {
-			// no	-> crate prv key, save to file
+			// no	-> create prv key, save to file
 			key := createPrivKey()
 			persistKey(key)
 			w.privateKey = key
