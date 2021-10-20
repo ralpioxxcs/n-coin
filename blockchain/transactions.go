@@ -63,7 +63,7 @@ func validate(tx *Tx) bool {
 			break
 		}
 		address := prevTx.TxOuts[txIn.Index].Adress
-		valid = wallet.Verify(txIn.Signature, txIn.TxID, address)
+		valid = wallet.Verify(txIn.Signature, tx.ID, address)
 		if !valid {
 			break
 		}

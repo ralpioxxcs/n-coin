@@ -31,6 +31,6 @@ POST http://localhost:4000/transactions
 http://localhost:4000/mempool
 
 ###
-http://localhost:4000/balance/nico?total=true
+http://localhost:4000/balance/woo?total=true
 ###
-http://localhost:4000/balance/nico
+http://localhost:4000/balance/woo
