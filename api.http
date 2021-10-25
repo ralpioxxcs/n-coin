@@ -24,7 +24,7 @@ POST http://localhost:4000/transactions
 
 {
     "to":"woo",
-    "amount":5
+    "amount":200
 }
 ###
 
