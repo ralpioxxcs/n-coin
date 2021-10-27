@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"time"
+
+	"github.com/ralpioxxcs/n-coin/cli"
+	"github.com/ralpioxxcs/n-coin/db"
 )
 
 func send(c chan<- int) /** send only **/ {
@@ -28,9 +31,11 @@ func receive(c <-chan int) /** receive only **/ {
 }
 
 func main() {
-	//c := make(chan int)    // unbufferd channel
-	c := make(chan int, 10) // bufferd channel (queue)
+	defer db.Close()
+	cli.Start()
 
-	go send(c)
-	receive(c)
+	// //c := make(chan int)    // unbufferd channel
+	// c := make(chan int, 10) // bufferd channel (queue)
+	// go send(c)
+	// receive(c)
 }
