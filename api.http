@@ -34,3 +34,14 @@ http://localhost:4000/mempool
 http://localhost:4000/balance/woo?total=true
 ###
 http://localhost:4000/balance/woo
+
+###
+POST http://localhost:4000/peers
+
+{
+    "address" : "127.0.0.1",
+    "port": "3000"
+}
+
+###
+GET http://localhost:3000/peers
