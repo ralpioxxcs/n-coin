@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/boltdb/bolt"
 	"github.com/ralpioxxcs/n-coin/utils"
+	bolt "go.etcd.io/bbolt"
 )
 
 // interface between blockchain and database
