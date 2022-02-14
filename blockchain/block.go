@@ -36,7 +36,7 @@ type Block struct {
 	Transactions []*Tx  `json:"transactions"`
 }
 
-func (b *Block) persist() {
+func persistBlock(b *Block) {
 	db.SaveBlock(b.Hash, utils.ToBytes(b))
 }
 
@@ -83,6 +83,7 @@ func createBlock(prevHash string, height int, diff int) *Block {
 	block.mine()
 	// 채굴을 끝낸 후,  transcations을 블록에 넣는다
 	block.Transactions = Mempool.TxToConfirm()
-	block.persist()
+	persistBlock(block)
+
 	return block
 }
