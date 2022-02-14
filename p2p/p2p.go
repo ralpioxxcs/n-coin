@@ -18,6 +18,7 @@ func Upgrade(rw http.ResponseWriter, r *http.Request) {
 		// openPort is used by other peers to request each other peers
 		return openPort != "" && ip != ""
 	}
+	fmt.Printf("%s wants an upgrade\n", openPort)
 
 	conn, err := upgrader.Upgrade(rw, r, nil)
 	utils.HandleErr(err)
@@ -30,10 +31,12 @@ func Upgrade(rw http.ResponseWriter, r *http.Request) {
 	|  :4000   | ---> |	 :3000   |
 	+----------+	  	+----------+
 	- add peer
-	- make websocket connection to port 3000
+	- make webSocket connection to port 3000
 */
 func AddPeer(address, port, openPort string) {
 	// Port :4000 is requesting an upgrade from the port :3000
+	fmt.Printf("%s wants to connect to port %s\n", openPort, port)
+
 	conn, _, err := websocket.DefaultDialer.Dial(
 		fmt.Sprintf("ws://%s:%s/ws?openPort=%s", address, port, openPort[1:]), nil)
 	utils.HandleErr(err)
