@@ -1,6 +1,8 @@
 package blockchain
 
 import (
+	"encoding/json"
+	"net/http"
 	"sync"
 
 	"github.com/ralpioxxcs/n-coin/db"
@@ -18,6 +20,7 @@ type blockchain struct {
 	NewestHash        string `json:"newestHash"`
 	Height            int    `json:"height"`
 	CurrentDifficulty int    `json:"currentDifficulty"`
+	m                 sync.Mutex
 }
 
 var b *blockchain
@@ -28,16 +31,21 @@ func (b *blockchain) restore(data []byte) {
 }
 
 // AddBlock
-func (b *blockchain) AddBlock() {
+func (b *blockchain) AddBlock() *Block {
 	block := createBlock(b.NewestHash, b.Height+1, getDifficulty(b))
 	b.NewestHash = block.Hash
 	b.Height = block.Height
 	b.CurrentDifficulty = block.Difficulty
 	persistBlockchain(b)
+
+	return block
 }
 
 // Blocks
 func Blocks(b *blockchain) []*Block {
+	b.m.Lock()
+	defer b.m.Unlock()
+
 	// slices of block pointer
 	var blocks []*Block
 	hashCursor := b.NewestHash
@@ -159,7 +167,17 @@ func Blockchain() *blockchain {
 	return b
 }
 
+func Status(b *blockchain, rw http.ResponseWriter) {
+	b.m.Lock()
+	defer b.m.Unlock()
+
+	utils.HandleErr(json.NewEncoder(rw).Encode(b))
+}
+
 func (b *blockchain) Replace(newBlocks []*Block) {
+	b.m.Lock()
+	defer b.m.Unlock()
+
 	// mutate
 	b.CurrentDifficulty = newBlocks[0].Difficulty
 	b.Height = len(newBlocks)
