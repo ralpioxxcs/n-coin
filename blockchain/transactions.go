@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/ralpioxxcs/n-coin/utils"
@@ -13,10 +14,24 @@ const (
 )
 
 type mempool struct {
-	Txs []*Tx
+	Txs map[string]*Tx
+	m   sync.Mutex
 }
 
-var Mempool *mempool = &mempool{}
+var m *mempool
+var memOnce sync.Once
+
+func Mempool() *mempool {
+	memOnce.Do(func() {
+		m = &mempool{
+			Txs: make(map[string]*Tx),
+		}
+	})
+	m.m.Lock()
+	defer m.m.Unlock()
+
+	return m
+}
 
 type Tx struct {
 	ID        string   `json:"id"`
@@ -74,7 +89,7 @@ func validate(tx *Tx) bool {
 func isOnMempool(uTxOut *UTxOut) bool {
 	exists := false
 Outer:
-	for _, tx := range Mempool.Txs {
+	for _, tx := range Mempool().Txs {
 		for _, input := range tx.TxIns {
 			if input.TxID == uTxOut.TxID && input.Index == uTxOut.Index {
 				exists = true
@@ -142,27 +157,38 @@ func makeTx(from, to string, amount int) (*Tx, error) {
 	return tx, nil
 }
 
-func (m *mempool) AddTx(to string, amount int) error {
+func (m *mempool) AddTx(to string, amount int) (*Tx, error) {
 	tx, err := makeTx(wallet.Wallet().Address, to, amount)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	m.Txs = append(m.Txs, tx)
-	return nil
+	m.Txs[tx.ID] = tx
+	return tx, nil
 }
 
 // 승인할 transactions
 func (m *mempool) TxToConfirm() []*Tx {
 	// coinbase의 tx를 가져옴
 	coinBase := makeCoinbaseTx(wallet.Wallet().Address)
-	// mempool의 모든 tx를 저장
-	txs := m.Txs
-
-	// coinbase tx 추가
+	var txs []*Tx
+	for _, tx := range m.Txs {
+		txs = append(txs, tx)
+	}
 	txs = append(txs, coinBase)
+	m.Txs = make(map[string]*Tx) // make empty map
 
-	// mempool 초기화
-	m.Txs = nil
 	return txs
+	// // mempool 초기화
+	// m.Txs = nil
+	// // mempool의 모든 tx를 저장
+	// txs := m.Txs
+	// // coinbase tx 추가
+	// txs = append(txs, coinBase)
+}
 
+func (m *mempool) AddPeerTx(tx *Tx) {
+	m.m.Lock()
+	defer m.m.Unlock()
+
+	m.Txs[tx.ID] = tx
 }
