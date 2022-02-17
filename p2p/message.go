@@ -3,6 +3,7 @@ package p2p
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/ralpioxxcs/n-coin/blockchain"
 	"github.com/ralpioxxcs/n-coin/utils"
@@ -16,6 +17,7 @@ const (
 	MessageAllBlocksReponse
 	MessageNewBlockNotify
 	MessageNewTxNotify
+	MessageNewPeerNotify
 )
 
 type Message struct {
@@ -63,6 +65,12 @@ func notifyNewTx(tx *blockchain.Tx, p *peer) {
 	p.inbox <- m
 }
 
+func notifyNewPeer(address string, p *peer) {
+	m := makeMessage(MessageNewPeerNotify, address)
+
+	p.inbox <- m
+}
+
 func handleMsg(m *Message, p *peer) {
 	// fmt.Printf("Peer: %s, Sent a message with kind of: %d\n", p.key, m.Kind)
 	switch m.Kind {
@@ -98,5 +106,11 @@ func handleMsg(m *Message, p *peer) {
 		var payload *blockchain.Tx
 		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
 		blockchain.Mempool().AddPeerTx(payload)
+	case MessageNewPeerNotify:
+		var payload string
+		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
+		parts := strings.Split(payload, ":")
+
+		AddPeer(parts[0], parts[1], parts[2], false)
 	}
 }
