@@ -32,6 +32,7 @@ func receive(c <-chan int) /** receive only **/ {
 
 func main() {
 	defer db.Close()
+	db.InitDB()
 	cli.Start()
 
 	// //c := make(chan int)    // unbufferd channel

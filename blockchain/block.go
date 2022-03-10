@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ralpioxxcs/n-coin/db"
 	"github.com/ralpioxxcs/n-coin/utils"
 )
 
@@ -37,7 +36,7 @@ type Block struct {
 }
 
 func persistBlock(b *Block) {
-	db.SaveBlock(b.Hash, utils.ToBytes(b))
+	dbStorage.SaveBlock(b.Hash, utils.ToBytes(b))
 }
 
 var ErrNotFound = errors.New("block not found")
@@ -47,7 +46,7 @@ func (b *Block) restore(data []byte) {
 }
 
 func FindBlock(hash string) (*Block, error) {
-	blockBytes := db.Block(hash)
+	blockBytes := dbStorage.FindBlock(hash)
 	if blockBytes == nil {
 		return nil, ErrNotFound
 	}
@@ -80,9 +79,9 @@ func createBlock(prevHash string, height int, diff int) *Block {
 		Difficulty: diff,
 		Nonce:      0,
 	}
-	block.mine()
-	// 채굴을 끝낸 후,  transcations을 블록에 넣는다
+	// ? 채굴을 끝낸 후,  transcations을 블록에 넣는다
 	block.Transactions = Mempool().TxToConfirm()
+	block.mine()
 	persistBlock(block)
 
 	return block
