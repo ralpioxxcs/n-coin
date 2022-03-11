@@ -16,5 +16,7 @@
 
 *.db
 
+*.wallet
+
 main
 .DS_Store

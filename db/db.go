@@ -47,7 +47,7 @@ func getDbName() string {
 	return fmt.Sprintf("%s_%s.db", dbName, port)
 }
 
-func InitDB() *bolt.DB {
+func InitDB() {
 	if db == nil {
 		dbPointer, err := bolt.Open(getDbName(), 0600, nil)
 		db = dbPointer
